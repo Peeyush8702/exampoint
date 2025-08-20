@@ -24,7 +24,7 @@
     *{box-sizing:border-box}
     html,body{height:100%}
     body{
-      margin:0; background:linear-gradient(180deg, #859ae7, #1a2cd4 40%, #06106b); color:var(--text);
+      margin:0; background:linear-gradient(180deg, #e5eaf0, #404997ce 40%, #173294); color:var(--text);
       font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
       letter-spacing:.2px;
     }
@@ -73,7 +73,7 @@
     .btn.ghost{background:transparent; border-color:rgba(255,255,255,.1)}
 
     /* Right sidebar */
-    .sidebar{position:sticky; top:12px; height:calc(100vh - 24px); overflow:auto; padding:12px; background:linear-gradient(180deg, #0d1535, #0a1025);
+    .sidebar{position:sticky; top:12px; height:calc(90vh - 35px); overflow:auto; padding:12px; background:linear-gradient(180deg, #0d1535, #0a1025);
       border:1px solid rgba(255,255,255,.06); border-radius:16px; box-shadow:var(--shadow)}
     .legend{display:flex; align-items:center; gap:14px; flex-wrap:wrap; padding:6px 8px; border-bottom:1px solid rgba(255,255,255,.06)}
     .dot{width:16px; height:16px; border-radius:999px; display:inline-block}
@@ -109,7 +109,7 @@
   border: 2px dashed rgba(255, 255, 255, 0.4);
   border-radius: 16px;
   padding: 30px;
-  width: 350px;
+  width: 1250px;
   text-align: center;
   color: #fff;
   transition: all 0.3s ease;
@@ -130,6 +130,13 @@
 .upload-box input[type="file"] {
   display: none;
 }
+#testList {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+  margin-top: 20px;
+}
+
 
 .upload-label {
   display: inline-block;
@@ -153,23 +160,55 @@
   text-align: left;
   color: #f0f0f0;
 }
-/* Flash green animation */
-@keyframes flash-green {
-  0% { background: linear-gradient(135deg, #ffffff, #00ff5e); }
-  100% { background: linear-gradient(180deg, #859ae7, #1a2cd4 40%, #06106b); }
-}
-body.flash-correct {
-  animation: flash-green 0.9s ease;
+.test-card {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  width: fit-content;
+  border-radius: 16px;
+  padding: 20px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #fff;
+  cursor: pointer;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.25);
+  transition: all 0.3s ease;
+  text-align: center;
 }
 
-/* Flash red animation */
+.test-card:hover {
+  transform: translateY(-4px) scale(1.02);
+  background: rgba(0, 225, 255, 0.15);
+  border-color: #00e1ff;
+  box-shadow: 0 10px 30px rgba(0,225,255,0.4);
+}
+
+
+/* Flash green animation */
+/* Flash green animation (wipe bottom → top) */
+@keyframes flash-green {
+  0% { background: linear-gradient(180deg, #22c55e, #16a34a); }
+  30% { background: linear-gradient(180deg, #22c55e, #173294); }
+  60% { background: linear-gradient(180deg, #22c55e,  #404997ce 40%, #173294); }
+  80%  { background: linear-gradient(180deg, #0f6e32c0, #404997ce 40%, #173294); }
+  100% { background:linear-gradient(180deg,  #e5eaf0, #404997ce 40%, #173294); }
+}
+body.flash-correct {
+  animation: flash-green 0.9s ease forwards;
+}
+
+/* Flash red animation (wipe bottom → top) */
 @keyframes flash-red {
-  0% { background: linear-gradient(135deg, #ffffff, #ff0000); }
-  100% { background: linear-gradient(180deg, #859ae7, #1a2cd4 40%, #06106b); }
+  0% { background: linear-gradient(180deg, #ef4444, #b91c1c); }
+  30% { background: linear-gradient(180deg, #ef4444, ); }
+  60% { background: linear-gradient(180deg, #ef4444,  #404997ce 40%, #173294); }
+  80%  { background: linear-gradient(180deg, #ef44447a,  #404997ce 40%, #173294); }
+  100% { background:linear-gradient(180deg,  #e5eaf0, #404997ce 40%, #173294); }
 }
 body.flash-wrong {
-  animation: flash-red 0.9s ease;
+  animation: flash-red 0.6s ease forwards;
 }
+
 
 
 
@@ -251,7 +290,8 @@ body.flash-wrong {
         <h2>Select or Upload Tests</h2>
         <input type="file" id="fileInput" accept=".json" multiple />
         <label for="fileInput" class="upload-label">📂 Choose JSON Files</label>
-        <ul id="testList" class="file-list"></ul>
+        <div id="testList" class="file-list"></div>
+
     </div>
 
   <div id="toast" class="toast">Saved</div>
@@ -421,13 +461,16 @@ function check(){
   // 🔥 Flash animation on whole page
   if(state.verdict[i]==='correct'){
     document.body.classList.add('flash-correct');
-    setTimeout(()=>document.body.classList.remove('flash-correct'), 300);
+    setTimeout(()=>document.body.classList.remove('flash-correct'), 900);
     pop('Correct (+4)');
   } else {
     document.body.classList.add('flash-wrong');
-    setTimeout(()=>document.body.classList.remove('flash-wrong'), 300);
+    setTimeout(()=>document.body.classList.remove('flash-wrong'), 900);
     pop('Wrong (−1)');
   }
+  const expBox = document.getElementById('noteStatus');
+  expBox.textContent = item.explanation || "No explanation provided."
+
 }
 
 
@@ -506,13 +549,14 @@ function renderTestList(){
   const list = document.getElementById('testList');
   list.innerHTML = '';
   Object.keys(tests).forEach(name => {
-    const li = document.createElement('li');
-    li.textContent = name;
-    li.style.cursor = 'pointer';
-    li.onclick = () => loadTest(name);
-    list.appendChild(li);
+    const card = document.createElement('div');
+    card.className = 'test-card';
+    card.textContent = name;
+    card.onclick = () => loadTest(name);
+    list.appendChild(card);
   });
 }
+
 
 function loadTest(name){
   currentTest = tests[name];
