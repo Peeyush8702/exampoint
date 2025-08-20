@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Room — PYQ / Test or Practice (Clone)</title>
+  <style>
+    :root{
+      --bg:#3f64bb;           /* slate-900 */
+      --card:#0b1226;         /* darker panel */
+      --panel:#0b1b3a;        /* blue-ish panel */
+      --blue:#2563eb;         /* brand blue */
+      --blue-2:#1d4ed8;
+      --text:#e5e7eb;         /* slate-200 */
+      --muted:#94a3b8;        /* slate-400 */
+      --ring:#60a5fa;         /* ring color */
+      --green:#22c55e;
+      --red:#ef4444;
+      --yellow:#f59e0b;
+      --purple:#7c3aed;
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --radius:14px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; background:linear-gradient(180deg, #859ae7, #1a2cd4 40%, #06106b); color:var(--text);
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
+      letter-spacing:.2px;
+    }
+    .app{display:grid; grid-template-columns:1fr 340px; gap:16px; padding:14px; max-width:1400px; margin:0 auto;}
+
+    /* Top nav */
+    .topbar{grid-column:1 / -1; background:#0b1440; border:1px solid rgba(255,255,255,.06);
+      border-radius:16px; box-shadow:var(--shadow); padding:10px 12px}
+    .title{font-weight:700; letter-spacing:.3px}
+    .subtitle{font-size:12px; color:var(--muted)}
+
+    .q-strip{display:flex; gap:8px; flex-wrap:wrap; margin-top:10px}
+    .q-chip{min-width:34px; height:30px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-weight:700;
+      background:#11236b; color:#cbd5e1; border:1px solid rgba(255,255,255,.06); cursor:pointer; transition:transform .08s ease}
+    .q-chip.active{background:var(--blue); color:white}
+    .q-chip:hover{transform:translateY(-1px)}
+
+    /* Main question card */
+    .card{background:linear-gradient(180deg, #0e1637, #0b1226); border:1px solid rgba(255,255,255,.06); border-radius:var(--radius);
+      box-shadow:var(--shadow)}
+    .card + .card{margin-top:12px}
+    .q-head{display:flex; align-items:center; gap:10px; padding:12px 16px; border-bottom:1px solid rgba(255,255,255,.06)}
+    .badge{font-size:11px; padding:3px 8px; border-radius:999px; border:1px solid rgba(255,255,255,.12); background:#0a1b3f; color:#a5b4fc}
+    .pill{font-size:11px; padding:3px 8px; border-radius:999px; border:1px dashed rgba(255,255,255,.18); background:#07142e; color:#7dd3fc}
+
+    .q-body{padding:16px}
+    .question{font-size:15px; margin:4px 0 14px}
+
+    .options{display:grid; gap:12px}
+    .option{display:flex; gap:12px; align-items:flex-start; padding:12px; background:#0a1433; border:1px solid rgba(255,255,255,.06); border-radius:12px; cursor:pointer}
+    .option:hover{border-color:rgba(255,255,255,.18)}
+    .opt-letter{width:28px; height:28px; border-radius:999px; display:grid; place-items:center; font-weight:800; background:#0e1d4a; color:#94a3b8}
+    .option.selected{outline:2px solid var(--ring);}
+    .option.correct{border-color:rgba(34,197,94,.7)}
+    .option.wrong{border-color:rgba(239,68,68,.7)}
+
+    .row{display:flex; gap:10px; align-items:center; flex-wrap:wrap;}
+    .spacer{flex:1}
+    .actions{padding:12px 16px; border-top:1px solid rgba(255,255,255,.06); display:flex; gap:10px; align-items:center}
+    button{appearance:none; border:0; border-radius:10px; padding:10px 14px; font-weight:700; cursor:pointer}
+    .btn{background:#0e1b46; color:#cbd5e1; border:1px solid rgba(255,255,255,.08)}
+    .btn:hover{filter:brightness(1.05)}
+    .btn.green{background:linear-gradient(180deg, #0e2e1f, #0c251a); border-color:rgba(34,197,94,.4); color:#c7f9cc}
+    .btn.red{background:linear-gradient(180deg, #2e1212, #241010); border-color:rgba(239,68,68,.4); color:#fecaca}
+    .btn.blue{background:linear-gradient(180deg, #122b6b, #0d2152); border-color:rgba(37,99,235,.5); color:#c7d2fe}
+    .btn.ghost{background:transparent; border-color:rgba(255,255,255,.1)}
+
+    /* Right sidebar */
+    .sidebar{position:sticky; top:12px; height:calc(100vh - 24px); overflow:auto; padding:12px; background:linear-gradient(180deg, #0d1535, #0a1025);
+      border:1px solid rgba(255,255,255,.06); border-radius:16px; box-shadow:var(--shadow)}
+    .legend{display:flex; align-items:center; gap:14px; flex-wrap:wrap; padding:6px 8px; border-bottom:1px solid rgba(255,255,255,.06)}
+    .dot{width:16px; height:16px; border-radius:999px; display:inline-block}
+    .dot.green{background:var(--green)}
+    .dot.red{background:var(--red)}
+    .dot.blue{background:var(--blue)}
+    .dot.yellow{background:var(--yellow)}
+    .dot.gray{background:#475569}
+
+    .palette{display:grid; grid-template-columns:repeat(6, 1fr); gap:8px; padding:12px 6px}
+    .pbtn{width:44px; height:44px; border-radius:50%; display:grid; place-items:center; font-weight:800; color:#e2e8f0; background:#0f1a42; border:1px solid rgba(255,255,255,.08); cursor:pointer}
+    .pbtn.seen{background:#3d3350; color:#ffe08a}
+    .pbtn.attempted{background:#173a8a}
+    .pbtn.correct{background:#0f3b25}
+    .pbtn.wrong{background:red}
+    .pbtn:hover{filter:brightness(1.05)}
+
+    .footer-nav{display:flex; justify-content:space-between; padding:10px 0}
+    .note{font-size:12px; color:var(--muted)}
+
+    /* Toast */
+    .toast{position:fixed; right:16px; bottom:16px; background:#0b1226; border:1px solid rgba(255,255,255,.1); color:var(--text); padding:15px 19px; border-radius:10px; opacity:0; transform:translateY(10px); transition:all .3s ease}
+    .toast.show{opacity:1; transform:translateY(0)}
+
+    @media (max-width:1100px){
+      .app{grid-template-columns:1fr}
+      .sidebar{position:static; height:auto}
+    }
+    /* Upload JSON Section */
+.upload-box {
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  border: 2px dashed rgba(255, 255, 255, 0.4);
+  border-radius: 16px;
+  padding: 30px;
+  width: 350px;
+  text-align: center;
+  color: #fff;
+  transition: all 0.3s ease;
+  margin: 20px auto;
+}
+
+.upload-box:hover {
+  border-color: #00e1ff;
+  box-shadow: 0 0 15px rgba(0, 225, 255, 0.6);
+}
+
+.upload-box h2 {
+  font-size: 20px;
+  margin-bottom: 15px;
+  font-weight: 600;
+}
+
+.upload-box input[type="file"] {
+  display: none;
+}
+
+.upload-label {
+  display: inline-block;
+  padding: 12px 25px;
+  background: linear-gradient(135deg, #00e1ff, #0077ff);
+  color: white;
+  font-weight: 600;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.upload-label:hover {
+  background: linear-gradient(135deg, #0077ff, #00e1ff);
+}
+
+/* Uploaded file list */
+.file-list {
+  margin-top: 15px;
+  font-size: 14px;
+  text-align: left;
+  color: #f0f0f0;
+}
+
+  </style>
+</head>
+<body>
+  <div class="app">
+    <!-- Top Bar -->
+    <div class="topbar">
+      <div class="row">
+        <div>
+          <div class="title">Biotechnology: Principles and Processes</div>
+          <div class="subtitle">https://room.examgoal.com/pyq/test-or-practice • PYQ / Practice</div>
+        </div>
+        <div class="spacer"></div>
+        <div style="display:flex; align-items:center; gap:10px">
+          <span id="scoreMini" class="subtitle">+4 / -1 • <span id="qTypeMini">MCQ</span></span>
+          <div id="timer" class="badge" title="Timer">00:00</div>
+        </div>
+      </div>
+      <div id="qStrip" class="q-strip"></div>
+    </div>
+
+    <!-- Main Column -->
+    <div>
+      <div class="card">
+        <div class="q-head">
+          <span class="badge" id="badgeSource">AIPMT 2004</span>
+          <span class="pill" id="badgeType">MCQ Single Answer</span>
+          <span class="spacer"></span>
+          <span class="subtitle" id="progressLabel">Q 1 of 10</span>
+        </div>
+        <div class="q-body">
+          <div id="questionText" class="question">Loading…</div>
+          <div id="options" class="options"></div>
+        </div>
+        <div class="actions">
+          <button class="btn ghost" id="clearBtn">Clear Response</button>
+          <div class="spacer"></div>
+          <button class="btn blue" id="checkBtn">Check Answer</button>
+          <button class="btn" id="prevBtn">Previous</button>
+          <button class="btn" id="nextBtn">Next</button>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:12px">
+        <div class="q-body">
+          <div class="row" style="gap:8px">
+            <button class="btn" id="addNote">Add a Note</button>
+            <span class="note" id="noteStatus">No note yet.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="legend">
+        <div style="font-weight:700">Legend</div>
+        <span class="dot green"></span><span class="subtitle">Correct</span>
+        <span class="dot red"></span><span class="subtitle">Wrong</span>
+        <span class="dot blue"></span><span class="subtitle">Attempted</span>
+        <span class="dot yellow"></span><span class="subtitle">Seen</span>
+        <span class="dot gray"></span><span class="subtitle">Not Seen</span>
+      </div>
+      <div style="padding:12px 8px; border-bottom:1px solid rgba(255,255,255,.06); display:flex; align-items:center; justify-content:space-between">
+        <div style="font-weight:800">Biology</div>
+        <div class="subtitle" id="counts">0</div>
+      </div>
+      <div id="palette" class="palette"></div>
+      <div class="footer-nav">
+        <button class="btn" id="firstBtn">« First</button>
+        <button class="btn" id="lastBtn">Last »</button>
+      </div>
+    </aside>
+  </div>
+      <div class="upload-box">
+        <h2>Select or Upload Tests</h2>
+        <input type="file" id="fileInput" accept=".json" multiple />
+        <label for="fileInput" class="upload-label">📂 Choose JSON Files</label>
+        <ul id="testList" class="file-list"></ul>
+    </div>
+
+  <div id="toast" class="toast">Saved</div>
+
+  <script>
+    /**
+     * 1000% Similar Exam Platform — Single File Clone
+     * Pure Frontend. Works offline / GitHub Pages. Persists to localStorage.
+     */
+
+    // ---- Demo data (replace with your JSON) ----
+    let QUESTIONS = [
+      {
+        id: 1,
+        source: "AIPMT 2004",
+        type: "MCQ Single Answer",
+        q: "Restriction endonucleases :-",
+        options: [
+          "Are used for in vitro DNA synthesis",
+          "Are present in mammalian cells for degradation of DNA when the cell dies",
+          "Are synthesized by bacteria as part of their defense mechanism",
+          "Are used in genetic engineering for ligating two DNA molecules"
+        ],
+        answer: 2
+      },
+      {
+        id: 2,
+        source: "AIPMT 2012",
+        type: "MCQ Single Answer",
+        q: "PCR stands for —",
+        options: ["Poly Chain Reaction","Polymerase Chain Reaction","Polymer Catalyzed Reaction","Poly Carbo Reaction"],
+        answer: 1
+      },
+      {
+        id: 3, source: "NEET 2020", type: "MCQ Single Answer",
+        q: "Which enzyme joins Okazaki fragments during DNA replication?",
+        options: ["DNA gyrase","DNA polymerase I","DNA ligase","Primase"],
+        answer: 2
+      },
+      { id: 4, source: "Mock", type: "MCQ Single Answer", q: "Which vector is commonly used for cloning in E. coli?", options:["Ti plasmid","λ phage","BAC","pBR322"], answer:3 },
+      { id: 5, source: "Mock", type: "MCQ Single Answer", q: "CRISPR associated nuclease is —", options:["Cas9","Taq","EcoRI","HindIII"], answer:0 },
+      { id: 6, source: "Mock", type: "MCQ Single Answer", q: "Gel used commonly in electrophoresis of DNA is —", options:["Agar","Agarose","Polyacrylamide","Pectin"], answer:1 },
+      { id: 7, source: "Mock", type: "MCQ Single Answer", q: "Sticky ends are produced by —", options:["Exonucleases","Endonucleases","Ligases","Polymerases"], answer:1 },
+      { id: 8, source: "Mock", type: "MCQ Single Answer", q: "Which step is NOT in PCR?", options:["Denaturation","Annealing","Transcription","Extension"], answer:2 },
+      { id: 9, source: "Mock", type: "MCQ Single Answer", q: "Selectable marker in pBR322 includes —", options:["lacZ","Amp^R","GFP","His tag"], answer:1 },
+      { id:10, source: "Mock", type: "MCQ Single Answer", q: "Enzyme from Thermus aquaticus used in PCR —", options:["DNA ligase","Taq polymerase","Reverse transcriptase","Topoisomerase"], answer:1 },
+    ];
+
+    // ---- State ----
+    const stateKey = 'examclone_state_v1';
+    let state = loadState();
+    if(!state || state.total !== QUESTIONS.length){
+      state = {
+        total: QUESTIONS.length,
+        current: 0,
+        selected: Array(QUESTIONS.length).fill(null),
+        verdict: Array(QUESTIONS.length).fill(null), // 'correct' | 'wrong'
+        seen: Array(QUESTIONS.length).fill(false),
+        notes: Array(QUESTIONS.length).fill(''),
+        startedAt: Date.now()
+      };
+      saveState();
+    }
+
+    // ---- Elements ----
+    const qStrip = document.getElementById('qStrip');
+    const palette = document.getElementById('palette');
+    const timerEl = document.getElementById('timer');
+    const questionText = document.getElementById('questionText');
+    const optionsEl = document.getElementById('options');
+    const progressLabel = document.getElementById('progressLabel');
+    const badgeSource = document.getElementById('badgeSource');
+    const badgeType = document.getElementById('badgeType');
+    const counts = document.getElementById('counts');
+    const noteStatus = document.getElementById('noteStatus');
+    const toast = document.getElementById('toast');
+
+    // ---- Build UI strips ----
+    function buildStrips(){
+      qStrip.innerHTML = '';
+      palette.innerHTML = '';
+      QUESTIONS.forEach((_,i)=>{
+        const chip = document.createElement('button');
+        chip.className = 'q-chip'; chip.textContent = (i+1);
+        chip.addEventListener('click', ()=>goto(i));
+        qStrip.appendChild(chip);
+
+        const p = document.createElement('button');
+        p.className = 'pbtn'; p.textContent = (i+1);
+        p.addEventListener('click', ()=>goto(i));
+        palette.appendChild(p);
+      });
+      updatePalette();
+    }
+
+    function updatePalette(){
+      const attempted = state.selected.map(v=>v!==null).filter(Boolean).length;
+      const correct = state.verdict.filter(v=>v==='correct').length;
+      const wrong = state.verdict.filter(v=>v==='wrong').length;
+      const seen = state.seen.filter(Boolean).length;
+      counts.textContent = `${state.total} • Seen ${seen} • Attempted ${attempted} • ✓ ${correct} • ✗ ${wrong}`;
+
+      [...qStrip.children].forEach((el,idx)=>{
+        el.classList.toggle('active', idx===state.current);
+      });
+
+      [...palette.children].forEach((el,idx)=>{
+        el.className = 'pbtn';
+        const v = state.verdict[idx];
+        if(v==='correct') el.classList.add('correct');
+        else if(v==='wrong') el.classList.add('wrong');
+        else if(state.selected[idx]!==null) el.classList.add('attempted');
+        else if(state.seen[idx]) el.classList.add('seen');
+      });
+    }
+
+    // ---- Render Question ----
+    function render(){
+      const i = state.current;
+      const item = QUESTIONS[i];
+      progressLabel.textContent = `Q ${i+1} of ${state.total}`;
+      questionText.textContent = item.q;
+      badgeSource.textContent = item.source;
+      badgeType.textContent = item.type;
+      document.getElementById('qTypeMini').textContent = item.type.startsWith('MCQ')? 'MCQ': item.type;
+
+      optionsEl.innerHTML = '';
+      item.options.forEach((opt,idx)=>{
+        const row = document.createElement('div');
+        row.className = 'option';
+        row.addEventListener('click', ()=>select(idx));
+        const letter = document.createElement('div');
+        letter.className = 'opt-letter';
+        letter.textContent = String.fromCharCode(65+idx);
+        const text = document.createElement('div');
+        text.innerHTML = opt;
+        row.append(letter, text);
+        if(state.selected[i]===idx) row.classList.add('selected');
+        if(state.verdict[i]=== 'correct' && idx===item.answer) row.classList.add('correct');
+        if(state.verdict[i]=== 'wrong' && idx===state.selected[i]) row.classList.add('wrong');
+        optionsEl.appendChild(row);
+      });
+
+      state.seen[i] = true; saveState(); updatePalette(); updateMiniScore();
+      noteStatus.textContent = state.notes[i] ? 'Note saved.' : 'No note yet.';
+    }
+
+    function select(idx){
+      state.selected[state.current] = idx; saveState(); render();
+    }
+
+    function check(){
+      const i = state.current, item = QUESTIONS[i];
+      const sel = state.selected[i];
+      if(sel===null){
+        pop('Select an option first'); return;
+      }
+      state.verdict[i] = sel === item.answer ? 'correct' : 'wrong';
+      saveState(); render(); pop(state.verdict[i]==='correct' ? 'Correct (+4)' : 'Wrong (−1)');
+    }
+
+    function clearResp(){
+      const i = state.current;
+      state.selected[i] = null; state.verdict[i] = null; saveState(); render();
+    }
+
+    function goto(i){ state.current = Math.max(0, Math.min(state.total-1, i)); saveState(); render(); }
+    function next(){ goto(state.current+1); }
+    function prev(){ goto(state.current-1); }
+    function first(){ goto(0); }
+    function last(){ goto(state.total-1); }
+
+    // ---- Notes ----
+    function addNote(){
+      const txt = prompt('Add a note for this question: ', state.notes[state.current]||'');
+      if(txt!==null){ state.notes[state.current] = txt.trim(); saveState(); render(); pop('Note saved'); }
+    }
+
+    // ---- Timer (count up) ----
+    function tick(){
+      const secs = Math.floor((Date.now() - state.startedAt)/1000);
+      const mm = String(Math.floor(secs/60)).padStart(2,'0');
+      const ss = String(secs%60).padStart(2,'0');
+      timerEl.textContent = `${mm}:${ss}`;
+      requestAnimationFrame(()=>setTimeout(tick, 300));
+    }
+
+    // ---- Persistence ----
+    function saveState(){ localStorage.setItem(stateKey, JSON.stringify(state)); updateMiniScore(); }
+    function loadState(){ try{ return JSON.parse(localStorage.getItem(stateKey)||''); }catch{ return null; } }
+
+    function updateMiniScore(){
+      const correct = state.verdict.filter(v=>v==='correct').length;
+      const wrong = state.verdict.filter(v=>v==='wrong').length;
+      document.getElementById('scoreMini').innerHTML = `
+        <span style="color:#86efac">+${correct*4}</span> / <span style="color:#fecaca">-${wrong}</span> • <span id="qTypeMini">MCQ</span>`;
+    }
+
+    // ---- Toast ----
+    let toastTO=null; function pop(msg){ toast.textContent=msg; toast.classList.add('show'); clearTimeout(toastTO); toastTO=setTimeout(()=>toast.classList.remove('show'),1500) }
+
+    // ---- Wire up ----
+    document.getElementById('checkBtn').onclick = check;
+    document.getElementById('clearBtn').onclick = clearResp;
+    document.getElementById('nextBtn').onclick = next;
+    document.getElementById('prevBtn').onclick = prev;
+    document.getElementById('firstBtn').onclick = first;
+    document.getElementById('lastBtn').onclick = last;
+    document.getElementById('addNote').onclick = addNote;
+
+    // Init
+    buildStrips();
+    render();
+    tick();
+    let tests = {}; // store uploaded tests by name
+let currentTest = null;
+
+document.getElementById('fileInput').addEventListener('change', async (event) => {
+  for (let file of event.target.files) {
+    const text = await file.text();
+    try {
+      const json = JSON.parse(text);
+      tests[file.name.replace('.json','')] = json;
+    } catch (e) {
+      alert(`❌ Failed to parse ${file.name}`);
+    }
+  }
+  renderTestList();
+});
+
+function renderTestList(){
+  const list = document.getElementById('testList');
+  list.innerHTML = '';
+  Object.keys(tests).forEach(name => {
+    const li = document.createElement('li');
+    li.textContent = name;
+    li.style.cursor = 'pointer';
+    li.onclick = () => loadTest(name);
+    list.appendChild(li);
+  });
+}
+
+function loadTest(name){
+  currentTest = tests[name];
+  QUESTIONS = currentTest; // overwrite your QUESTIONS array
+  resetExam();
+}
+
+// reset exam state when new test loads
+function resetExam(){
+  state = {
+    total: QUESTIONS.length,
+    current: 0,
+    selected: Array(QUESTIONS.length).fill(null),
+    verdict: Array(QUESTIONS.length).fill(null),
+    seen: Array(QUESTIONS.length).fill(false),
+    notes: Array(QUESTIONS.length).fill(''),
+    startedAt: Date.now()
+  };
+  saveState();
+  buildStrips();
+  render();
+}
+
+  </script>
+</body>
+</html>
