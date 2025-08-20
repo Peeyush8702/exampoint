@@ -85,10 +85,10 @@
 
     .palette{display:grid; grid-template-columns:repeat(6, 1fr); gap:8px; padding:12px 6px}
     .pbtn{width:44px; height:44px; border-radius:50%; display:grid; place-items:center; font-weight:800; color:#e2e8f0; background:#0f1a42; border:1px solid rgba(255,255,255,.08); cursor:pointer}
-    .pbtn.seen{background:#3d3350; color:#ffe08a}
-    .pbtn.attempted{background:#173a8a}
-    .pbtn.correct{background:#0f3b25}
-    .pbtn.wrong{background:red}
+    .pbtn.seen{background:#706f18; color:#ffe08a}
+    .pbtn.attempted{background:#19419c}
+    .pbtn.correct{background:#134d30}
+    .pbtn.wrong{background:rgb(133, 11, 11)}
     .pbtn:hover{filter:brightness(1.05)}
 
     .footer-nav{display:flex; justify-content:space-between; padding:10px 0}
@@ -237,69 +237,8 @@
   <div id="toast" class="toast">Saved</div>
 
   <script>
-    let tests = {}; // store all loaded tests
-let savedTests = JSON.parse(localStorage.getItem("testList") || "[]");
-
-// On startup, load saved test list
-savedTests.forEach(t => {
-  fetchAndAddTest(t.name, t.url);
-});
-
-async function fetchAndAddTest(name, url){
-  try {
-    const res = await fetch(url);
-    const json = await res.json();
-    tests[name] = json;
-    renderTestList();
-  } catch(e){
-    console.error("❌ Failed to fetch", name, e);
-  }
-}
-
-function addRemoteTest(name, url){
-  savedTests.push({name, url});
-  localStorage.setItem("testList", JSON.stringify(savedTests));
-  fetchAndAddTest(name, url);
-}
-
-function renderTestList(){
-  const list = document.getElementById('testList');
-  list.innerHTML = '';
-  Object.keys(tests).forEach(name => {
-    const li = document.createElement('li');
-    li.textContent = name;
-    li.style.cursor = 'pointer';
-    li.onclick = () => loadTest(name);
-    list.appendChild(li);
-  });
-}
-
-function loadTest(name){
-  QUESTIONS = tests[name];
-  resetExam();
-}
-
-function resetExam(){
-  state = {
-    total: QUESTIONS.length,
-    current: 0,
-    selected: Array(QUESTIONS.length).fill(null),
-    verdict: Array(QUESTIONS.length).fill(null),
-    seen: Array(QUESTIONS.length).fill(false),
-    notes: Array(QUESTIONS.length).fill(''),
-    startedAt: Date.now()
-  };
-  saveState();
-  buildStrips();
-  render();
-}
-
-    /**
-     * 1000% Similar Exam Platform — Single File Clone
-     * Pure Frontend. Works offline / GitHub Pages. Persists to localStorage.
-     */
-
-    // ---- Demo data (replace with your JSON) ----
+  
+  
     let QUESTIONS = [
       {
         id: 1,
@@ -555,5 +494,4 @@ function resetExam(){
 
   </script>
 </body>
-
 </html>
