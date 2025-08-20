@@ -237,6 +237,63 @@
   <div id="toast" class="toast">Saved</div>
 
   <script>
+    let tests = {}; // store all loaded tests
+let savedTests = JSON.parse(localStorage.getItem("testList") || "[]");
+
+// On startup, load saved test list
+savedTests.forEach(t => {
+  fetchAndAddTest(t.name, t.url);
+});
+
+async function fetchAndAddTest(name, url){
+  try {
+    const res = await fetch(url);
+    const json = await res.json();
+    tests[name] = json;
+    renderTestList();
+  } catch(e){
+    console.error("❌ Failed to fetch", name, e);
+  }
+}
+
+function addRemoteTest(name, url){
+  savedTests.push({name, url});
+  localStorage.setItem("testList", JSON.stringify(savedTests));
+  fetchAndAddTest(name, url);
+}
+
+function renderTestList(){
+  const list = document.getElementById('testList');
+  list.innerHTML = '';
+  Object.keys(tests).forEach(name => {
+    const li = document.createElement('li');
+    li.textContent = name;
+    li.style.cursor = 'pointer';
+    li.onclick = () => loadTest(name);
+    list.appendChild(li);
+  });
+}
+
+function loadTest(name){
+  QUESTIONS = tests[name];
+  resetExam();
+}
+
+function resetExam(){
+  state = {
+    total: QUESTIONS.length,
+    current: 0,
+    selected: Array(QUESTIONS.length).fill(null),
+    verdict: Array(QUESTIONS.length).fill(null),
+    seen: Array(QUESTIONS.length).fill(false),
+    notes: Array(QUESTIONS.length).fill(''),
+    startedAt: Date.now()
+  };
+  saveState();
+  buildStrips();
+  render();
+}
+
     /**
      * 1000% Similar Exam Platform — Single File Clone
      * Pure Frontend. Works offline / GitHub Pages. Persists to localStorage.
@@ -498,4 +555,5 @@ function resetExam(){
 
   </script>
 </body>
+
 </html>
