@@ -88,7 +88,7 @@
     .pbtn.seen{background:#706f18; color:#ffe08a}
     .pbtn.attempted{background:#19419c}
     .pbtn.correct{background:#134d30}
-    .pbtn.wrong{background:rgb(133, 11, 11)}
+    .pbtn.wrong{background:#850b0b}
     .pbtn:hover{filter:brightness(1.05)}
 
     .footer-nav{display:flex; justify-content:space-between; padding:10px 0}
@@ -153,6 +153,25 @@
   text-align: left;
   color: #f0f0f0;
 }
+/* Flash green animation */
+@keyframes flash-green {
+  0% { background: linear-gradient(135deg, #134d30, #0eff72b9); }
+  100% { background: linear-gradient(180deg, #0e1637, #0b1226); }
+}
+.card.flash-correct {
+  animation: flash-green 0.9s ease;
+}
+
+/* Flash red animation */
+@keyframes flash-red {
+  0% { background: linear-gradient(135deg, #850b0b, #d11212); }
+  100% { background: linear-gradient(180deg, #0e1637, #0b1226); }
+}
+.card.flash-wrong {
+  animation: flash-red 0.9s ease;
+}
+
+
 
   </style>
 </head>
@@ -162,8 +181,8 @@
     <div class="topbar">
       <div class="row">
         <div>
-          <div class="title">Biotechnology: Principles and Processes</div>
-          <div class="subtitle">https://room.examgoal.com/pyq/test-or-practice • PYQ / Practice</div>
+          <div class="title">Exam-Point</div>
+          <div class="subtitle">https://peeyush8702.github.io//Exam-Pint//Practice</div>
         </div>
         <div class="spacer"></div>
         <div style="display:flex; align-items:center; gap:10px">
@@ -379,15 +398,39 @@
       state.selected[state.current] = idx; saveState(); render();
     }
 
-    function check(){
-      const i = state.current, item = QUESTIONS[i];
-      const sel = state.selected[i];
-      if(sel===null){
-        pop('Select an option first'); return;
-      }
-      state.verdict[i] = sel === item.answer ? 'correct' : 'wrong';
-      saveState(); render(); pop(state.verdict[i]==='correct' ? 'Correct (+4)' : 'Wrong (−1)');
-    }
+    // function check(){
+    //   const i = state.current, item = QUESTIONS[i];
+    //   const sel = state.selected[i];
+    //   if(sel===null){
+    //     pop('Select an option first'); return;
+    //   }
+    //   state.verdict[i] = sel === item.answer ? 'correct' : 'wrong';
+    //   saveState(); render(); pop(state.verdict[i]==='correct' ? 'Correct (+4)' : 'Wrong (−1)');
+    // }
+function check(){
+  const i = state.current, item = QUESTIONS[i];
+  const sel = state.selected[i];
+  if(sel===null){
+    pop('Select an option first'); 
+    return;
+  }
+  state.verdict[i] = sel === item.answer ? 'correct' : 'wrong';
+  saveState(); render();
+
+  // 🔥 Flash animation
+  const card = document.querySelector('.card');
+  if(state.verdict[i]==='correct'){
+    card.classList.add('flash-correct');
+    setTimeout(()=>card.classList.remove('flash-correct'), 300);
+    pop('Correct (+4)');
+  } else {
+    card.classList.add('flash-wrong');
+    setTimeout(()=>card.classList.remove('flash-wrong'), 300);
+    pop('Wrong (−1)');
+  }
+}
+
+
 
     function clearResp(){
       const i = state.current;
